@@ -12,6 +12,7 @@ class RT_TextClicker:
         self.scaling_factor = scaling_factor
         pt.FAILSAFE = True
 
+
     # Capture the screen and extract text from it
     def screen_to_text(self, region=None):
         screen = pt.screenshot(region=region)
