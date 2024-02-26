@@ -30,6 +30,9 @@ class RT_TextClicker:
         result_gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
         binary_image = cv2.threshold(result_gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
+        cv2.imwrite("C:/Users/TimPfeiffer/Pictures/result_gray.jpg", result_gray)
+        cv2.imwrite("C:/Users/TimPfeiffer/Pictures/binary_image.jpg", binary_image)
+
         text_data = pytesseract.image_to_data(binary_image, output_type=pytesseract.Output.DICT)
 
         clicked = False
