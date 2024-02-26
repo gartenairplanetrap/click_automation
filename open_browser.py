@@ -1,22 +1,22 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import scrapy
 import pyautogui as pt
 import pytesseract
 import time
+from rt_text_clicker import RT_TextClicker
 
+rttc = RT_TextClicker(0.0001, 1)
+button_region = (0, 0, 2560, 1600)
 
-def screen_to_text(region=None):
-    screen = pt.screenshot(region=region)
-    text = pytesseract.image_to_data(screen)
-    return text
 
 def click_textdata(target_text, region=None, interval=1, max_attempts=10):
-    scaling_factor=2
-    text_data = screen_to_text(region)
+    scaling_factor = 1
+    screen = pt.screenshot(region=region)
+    text_data = pytesseract.image_to_data(screen)
     for count, data in enumerate(text_data.splitlines()):
         if count > 0:
             data = data.split()
@@ -27,47 +27,106 @@ def click_textdata(target_text, region=None, interval=1, max_attempts=10):
                 pt.click(click_x, click_y)
                 break
 
-def open_website(url):
+
+def open_firefox(url):
     options = Options()
     options.add_argument("--zoom=1.2")  # Set zoom level (if needed)
     options.add_argument("--start-maximized")  # Maximizes but can sometimes not be true fullscreen
-    #options.add_argument("--kiosk")  # True fullscreen mode
-    driver = webdriver.Chrome(options=options)
+    # options.add_argument("--kiosk")  # True fullscreen mode
+    driver = webdriver.Firefox(options=options)
     driver.get(url)
-    time.sleep(1)
-    try:
-        click_textdata(target_text="AGREE")
 
-    except Exception as e:
-        print(f"Error: {e}")
-
-    # Deliberate delay to observe (Adjust as needed)
     time.sleep(2)
 
+    rttc.click_textdata("OK")
+
+    driver.maximize_window()
+
+    time.sleep(5)
+
     try:
         WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.ID, "header_clubs"))
+            EC.presence_of_element_located((By.XPATH, "//strong[contains(text(), 'connect')"))
         )
-        driver.find_element(By.ID, "header_clubs").click()
-        print("Clicked header_clubs")
-    except Exception as e:
-        print(f"Navigation error at header_clubs: {e}")
+        driver.find_element(By.XPATH, "//strong[contains(text(), 'connect')")
 
-        time.sleep(3)
+        print("Selenium")
+
+    except Exception as e:
+        print("Textclicker")
+
+        rttc.click_textdata("connect")
+        print(f"Navigation error: {e}")
+
     try:
-        # Wait for submenu to potentially load
-        WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="div_popular_clubs_m"]/div/a[3]'))
-        )
-        driver.find_element(By.XPATH, '//*[@id="div_popular_clubs_m"]/div/a[3]').click()
+        dropdown_trigger = driver.find_element(By.CSS_SELECTOR, "a[data-target='hardkeys_mfl_dropdown']")
+        dropdown_trigger.click()  # Open the dropdown
 
-        print("Clicked Club")
+        WebDriverWait(driver, 5).until(
+            EC.visibility_of_element_located((By.ID, "HOME_1_BUTTON"))
+        )
+
+        home_button = driver.find_element(By.ID, "HOME_1_BUTTON")
+        home_button.click()
+
+        print("Selenium")
 
     except Exception as e:
-        print(f"Navigation error at club: {e}")
+
+        print(f"Navigation error: {e}")
+
+    # click_textdata("AGREE")
+
+
+def open_chrome(url):
+    options = Options()
+    options.add_argument("--zoom=1.2")  # Set zoom level (if needed)
+    options.add_argument("--start-maximized")  # Maximizes but can sometimes not be true fullscreen
+    # options.add_argument("--kiosk")  # True fullscreen mode
+    import os
+    os.environ["PATH"] = 'C:/Users/TimPfeiffer/Downloads/chromedriver_win32/chromedriver' + ";" + os.environ["PATH"]
+
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    time.sleep(2)
+
+    rttc.click_textdata("OK")
+
+    time.sleep(5)
+
+    try:
+        WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, "//strong[contains(text(), 'connect')"))
+        )
+        driver.find_element(By.XPATH, "//strong[contains(text(), 'connect')")
+
+        print("Selenium")
+
+    except Exception as e:
+        print("Textclicker")
+
+        rttc.click_textdata("connect")
+        print(f"Navigation error: {e}")
+
+    try:
+        dropdown_trigger = driver.find_element(By.CSS_SELECTOR, "a[data-target='hardkeys_mfl_dropdown']")
+        dropdown_trigger.click()  # Open the dropdown
+
+        WebDriverWait(driver, 5).until(
+            EC.visibility_of_element_located((By.ID, "HOME_1_BUTTON"))
+        )
+
+        home_button = driver.find_element(By.ID, "HOME_1_BUTTON")
+        home_button.click()
+
+        print("Selenium")
+
+    except Exception as e:
+
+        print(f"Navigation error: {e}")
 
 
 if __name__ == "__main__":
-    url = "https://fbref.com/en/"
-    open_website(url)
-
+    url = "https://mib-certs-target.joomo.de/ui/"
+    # url = "https://fbref.com/en/"
+    open_firefox(url)
